@@ -1,1 +1,2 @@
-include 'DungeoneerDesktop', 'DungeoneerAndroid', 'Dungeoneer', 'DelvEdit'
+include 'DungeoneerDesktop', 'Dungeoneer', 'DelvEdit'
+// , 'DungeoneerAndroid'

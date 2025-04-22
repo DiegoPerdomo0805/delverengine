@@ -16,12 +16,12 @@
       "mainClass": "com.interrupt.dungeoneer.EditorStarter",
       "projectName": "DelvEdit",
       "cwd": "${workspaceFolder}/Dungeoneer"
-    },
+    }/*,
     {
       "type": "node-terminal",
       "name": "DungeoneerAndroid",
       "request": "launch",
       "command": "gradle DungeoneerAndroid:installDebug DungeoneerAndroid:run"
-    }
+    }*/
   ]
 }
