@@ -11,6 +11,7 @@ import com.interrupt.dungeoneer.entities.items.Weapon.DamageType;
 import com.interrupt.dungeoneer.entities.triggers.Trigger;
 import com.interrupt.dungeoneer.game.*;
 import com.interrupt.dungeoneer.rpg.Stats;
+import com.interrupt.dungeoneer.stats.PlayerStats;
 import com.interrupt.dungeoneer.statuseffects.ParalyzeEffect;
 import com.interrupt.dungeoneer.statuseffects.PoisonEffect;
 import com.interrupt.dungeoneer.statuseffects.StatusEffect;
@@ -215,8 +216,8 @@ public class Actor extends Entity {
 		// Healing should heal
 		if(damageType == DamageType.HEALING) damage *= -1f;
 
-		// Vampire should heal the instigator
-		if(damageType == DamageType.VAMPIRE && instigator != null) {
+                // Vampire should heal the instigator
+                if(damageType == DamageType.VAMPIRE && instigator != null) {
 			if(instigator instanceof Actor) {
 				Actor inst = (Actor)instigator;
 				if(inst.isAlive()) {
@@ -250,13 +251,23 @@ public class Actor extends Entity {
 			}
 		}
 		
-		hp -= damage;
+                int originalHp = hp;
+                hp -= damage;
 
-		// clamp out on max hp
-		if(hp > getMaxHp()) hp = getMaxHp();
+                // Track statistics for player combat
+                if(instigator instanceof Player) {
+                        boolean killed = originalHp > 0 && hp <= 0;
+                        PlayerStats.instance.recordHit(damageType, Math.max(damage,0), killed);
+                }
+                if(this instanceof Player) {
+                        PlayerStats.instance.recordDamageReceived(Math.max(damage,0));
+                }
 
-		return damage;
-	}
+                // clamp out on max hp
+                if(hp > getMaxHp()) hp = getMaxHp();
+
+                return damage;
+        }
 	
 	public boolean isAlive()
 	{
