@@ -42,6 +42,7 @@ import com.interrupt.dungeoneer.tiles.Tile;
 import com.interrupt.helpers.PlayerHistory;
 import com.interrupt.managers.HUDManager;
 import com.interrupt.managers.StringManager;
+import com.interrupt.dungeoneer.stats.PlayerStats;
 
 import java.text.MessageFormat;
 import java.util.HashMap;
@@ -746,6 +747,8 @@ public class Player extends Actor {
         Array<LerpFrame> deathFrames = new Array<LerpFrame>();
 
         GameManager.getGameMode().onPlayerDeath(this);
+
+        PlayerStats.instance.recordDeath();
 
         floating = false;
 
