@@ -13,6 +13,8 @@ import com.interrupt.dungeoneer.overlays.OverlayManager;
 import com.interrupt.dungeoneer.overlays.PauseOverlay;
 import com.interrupt.managers.StringManager;
 import com.interrupt.utils.Logger;
+import com.interrupt.dungeoneer.mods.playerstats.PlayerStatsStore;
+import com.interrupt.dungeoneer.stats.PlayerStats;
 
 /**
  *
@@ -27,6 +29,8 @@ public class GameManager {
 	public static boolean gameHasStarted = false;
 
 	public boolean running = true;
+
+	private boolean statsHotkeyDown = false;
 
 	public GameManager() {
         instance = this;
@@ -120,6 +124,18 @@ public class GameManager {
 			}
 
 			if (running) game.tick(delta);
+
+			// Lightweight hotkey to print current stats and file path
+			boolean pressed = Gdx.input.isKeyPressed(Input.Keys.F9);
+			if (pressed && !statsHotkeyDown) {
+				statsHotkeyDown = true;
+				java.nio.file.Path p = PlayerStatsStore.getFile();
+				String pathStr = (p != null) ? p.toString() : "<uninitialized>";
+				Gdx.app.log("Stats", PlayerStats.instance.toString() + " | file=" + pathStr);
+			}
+			else if (!pressed && statsHotkeyDown) {
+				statsHotkeyDown = false;
+			}
 
 			SteamApi.api.runCallbacks();
 		}

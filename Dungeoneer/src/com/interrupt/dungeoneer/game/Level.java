@@ -357,11 +357,11 @@ public class Level {
 		// Generate a level for verification in the editor
 		Boolean isValid = false;
 
-		while(isValid == false) {
-			Gdx.app.log("DelverGenerator", "Making level");
+        while(isValid == false) {
+            Gdx.app.log("DelverGenerator", "Making level");
 
-			DungeonGenerator generator;
-			Level generatedLevel = null;
+            DungeonGenerator generator;
+            Level generatedLevel = null;
 
 			Progression progression = null;
 			if(Game.instance != null) {
@@ -372,15 +372,39 @@ public class Level {
 				progression = new Progression();
 			}
 
-			// Try to generate a level
-			try {
-				generator = new DungeonGenerator(new Random(), dungeonLevel);
-				generatedLevel = generator.MakeDungeon(theme, roomGeneratorType, roomGeneratorChance, progression);
-				isValid = checkIsValidLevel(generatedLevel, dungeonLevel);
-			}
-			catch(Exception ex) {
-				Gdx.app.error("DelverGenerator", ex.getMessage());
-			}
+            // Try to generate a level
+            try {
+                // Prefer the AIAdaptiveDelver Delaunay-based generator if that mod is active
+                boolean aiAdaptivePresent = Game.findInternalFileInMods("generator/AIAdaptive/info.dat").exists();
+                if (aiAdaptivePresent) {
+                    com.interrupt.dungeoneer.gen.DelaunayBasedGenerator gen2 = new com.interrupt.dungeoneer.gen.DelaunayBasedGenerator();
+                    com.interrupt.dungeoneer.gen.DelaunayBasedGenerator.GeneratorParams params = new com.interrupt.dungeoneer.gen.DelaunayBasedGenerator.GeneratorParams();
+                    // Size heuristics match chunk-tile defaults where possible
+                    com.interrupt.dungeoneer.generator.GenTheme t = com.interrupt.dungeoneer.generator.DungeonGenerator.GetGenData(theme);
+                    int tileSize = t.getChunkTileSize();
+                    int mapChunks = t.getMapChunks();
+                    params.gridWidth = tileSize * mapChunks;
+                    params.gridHeight = tileSize * mapChunks;
+                    params.biome = theme;
+                    params.difficultyTier = dungeonLevel;
+
+                    com.interrupt.dungeoneer.spawn.SpawnController spawns = com.interrupt.dungeoneer.spawn.SpawnController.makeForActiveMods();
+                    long seed = new Random().nextLong();
+                    generatedLevel = gen2.generate(seed, params, spawns);
+                    // Copy across a few metadata bits for consistency
+                    generatedLevel.generated = true;
+                    generatedLevel.theme = theme;
+                    isValid = checkIsValidLevel(generatedLevel, dungeonLevel);
+                }
+                else {
+                    generator = new DungeonGenerator(new Random(), dungeonLevel);
+                    generatedLevel = generator.MakeDungeon(theme, roomGeneratorType, roomGeneratorChance, progression);
+                    isValid = checkIsValidLevel(generatedLevel, dungeonLevel);
+                }
+            }
+            catch(Exception ex) {
+                Gdx.app.error("DelverGenerator", ex.getMessage());
+            }
 
 			// Did we make a valid level? Try again if not.
 			if (!isValid || generatedLevel == null) {

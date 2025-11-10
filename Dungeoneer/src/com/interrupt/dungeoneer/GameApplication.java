@@ -15,6 +15,7 @@ import com.interrupt.dungeoneer.screens.LevelChangeScreen;
 import com.interrupt.dungeoneer.screens.MainMenuScreen;
 import com.interrupt.dungeoneer.screens.SplashScreen;
 import com.interrupt.utils.JsonUtil;
+import com.interrupt.dungeoneer.mods.playerstats.PlayerStatsStore;
 
 public class GameApplication extends Game {
 
@@ -38,6 +39,12 @@ public class GameApplication extends Game {
 		gameManager = new GameManager(this);
         Gdx.input.setInputProcessor( input );
         gameManager.init();
+
+        try {
+            // Initialize persistent PlayerStats store under the save directory
+            java.nio.file.Path root = java.nio.file.Paths.get(com.interrupt.dungeoneer.game.Options.getOptionsDir(), "mods", "stats");
+            PlayerStatsStore.init(root);
+        } catch (Throwable ignored) { }
 
         mainMenuScreen = new SplashScreen();
         mainScreen = new GameScreen(gameManager, input);
@@ -71,6 +78,7 @@ public class GameApplication extends Game {
 	@Override
 	public void dispose() {
 		Gdx.app.log("DelverLifeCycle", "Goodbye");
+		try { PlayerStatsStore.flush(); } catch (Throwable ignored) { }
 		mainScreen.dispose();
 		SteamApi.api.dispose();
 	}
